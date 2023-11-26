@@ -1,37 +1,39 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from datetime import date
+
+from django.conf import settings
 from .models import GeneratedImage, DailyStats, RecentImage
+from openai import OpenAI
+
+from .utils import update_image
+
+def generate_image(request):
+    #if image_prompt is empty, return error
+    if request.method == 'POST':
+        image_prompt = request.POST.get('image_prompt')
+        if image_prompt == "":
+            return HttpResponse("Error: image_prompt cannot be empty")
+
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt= image_prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+            )
+
+        image_url = response.data[0].url
+
+        update_image(image_url)
+
+        return HttpResponse(image_url)
+    return HttpResponse("Error: image_prompt variable not found")
 
 def main_view(request):
-    #create new generated image object
-    generated_image = GeneratedImage(url="https://upload.wikimedia.org/wikipedia/commons/2/25/Blisk-logo-512-512-background-transparent.png")
-    generated_image.save()
-
-    #update most recent generated image
-    #get most recent generated image, or create new one if none exist
-    recent_image = RecentImage.objects.all().first()
-    if recent_image is None:
-        recent_image = RecentImage(image=generated_image)
-    else:
-        recent_image.image = generated_image
-    recent_image.save()
-
-    #update daily stats
-    #get today's date    
-    today = date.today()
-    #get today's daily stats
-    daily_stats = DailyStats.objects.filter(date=today)
-    #if today's daily stats already exist, increment num_generated
-    if daily_stats.exists():
-        daily_stats[0].increment_num_generated()
-    #else create new daily stats
-    else:
-        daily_stats = DailyStats(date=today, num_generated=1)
-        daily_stats.save()
-
-    #return the generated image
-    return HttpResponse(generated_image.url)
+    return render(request, 'main_view.html')
 
 
 #gets the image url of the most recent generated image

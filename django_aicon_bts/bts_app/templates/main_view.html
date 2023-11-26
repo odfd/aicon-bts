@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Generator</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <form id="image-form">
+        {% csrf_token %}
+        <input type="text" id="image-prompt" placeholder="Enter image prompt">
+        <button type="submit">Generate Image</button>
+    </form>
+    <img id="generated-image" src="" alt="Generated image will appear here">
+    <script>
+        $(document).ready(function(){
+            $('#image-form').on('submit', function(e){
+                e.preventDefault();
+                $.ajax({
+                    url: '/app/generate_image/',  // Update this if your URL is different
+                    type: 'post',
+                    data: {
+                        'image_prompt': $('#image-prompt').val(),
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success: function(data){
+                        $('#generated-image').attr('src', data);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
