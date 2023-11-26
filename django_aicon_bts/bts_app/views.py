@@ -60,7 +60,11 @@ def process_audio(request):
         #for each audiofile, get path and delete the file to make sure no audio is saved on the server
         for audio_file in AudioFile.objects.all():            
             audio_file_path = audio_file.file.path
-            os.remove(audio_file_path+ ".wav")
+            #delete the wav file, only if it exists
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+            if os.path.exists(audio_file_path+ ".wav"):
+                os.remove(audio_file_path+ ".wav")
             #delete the audio file object
             audio_file.delete()
 
