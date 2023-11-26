@@ -30,3 +30,7 @@ class DailyStats(models.Model):
         self.num_generated += 1
         self.save()
 
+
+class AudioFile(models.Model):
+    file = models.FileField(upload_to='audio_files/')
+
