@@ -5,7 +5,7 @@ from django.db import models
 
 #store image url
 class GeneratedImage(models.Model):
-    url = models.CharField(max_length=200)
+    url = models.CharField(max_length=500)
 
     def __str__(self):
         return self.url  
