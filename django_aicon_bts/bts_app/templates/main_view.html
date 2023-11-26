@@ -16,7 +16,7 @@
             $('#image-form').on('submit', function(e){
                 e.preventDefault();
                 $.ajax({
-                    url: '/app/generate_image/',  // Update this if your URL is different
+                    url: '/generate_image/',  // Update this if your URL is different
                     type: 'post',
                     data: {
                         'image_prompt': $('#image-prompt').val(),
