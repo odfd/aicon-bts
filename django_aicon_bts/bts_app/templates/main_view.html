@@ -10,16 +10,46 @@
         <input type="text" id="image-prompt" placeholder="Enter image prompt">
         <button type="submit">Generate Image</button>
     </form>
+    
+    <div id="mic_recording">
+        <button id="startRecording">Start Recording</button>
+        <button id="stopRecording" disabled>Stop Recording</button>
+    </div>
+    <div id="loading-transcription" style="display: none;">
+        <p>Transcribing...</p>
+    </div>
+    <div id="transcriptionResult"></div>
+    <div id="loading-gpt-prompt" style="display: none;">
+        <p>Generating GPT prompt...</p>
+    </div>
+    <div id="gptPromptResult"></div>
+    <div id="loading-image" style="display: none;">
+        <p>Generating image...</p>
+    </div>
     <img id="generated-image" src="" alt="Generated image will appear here">
 
-    <button id="startRecording">Start Recording</button>
-    <button id="stopRecording" disabled>Stop Recording</button>
-    <div id="transcriptionResult"></div>
-
     <script>
+
+        function getGptContextPrompt(speech2text) {
+                $.ajax({
+                    url: '/get_gpt_context_prompt/',
+                    type: 'post',
+                    data: {
+                        'result_speech2text': speech2text,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success: function(data){
+                        console.log(data);
+                        console.log('GPT response received successfully');      
+                        $('#gptPromptResult').text(data);                  
+                    }
+                });
+            }
+
+
         function generateImage(imagePrompt) {
                 $.ajax({
-                    url: '/generate_image/',  // Update this if your URL is different
+                    url: '/generate_image/',
                     type: 'post',
                     data: {
                         'image_prompt': imagePrompt,
@@ -34,10 +64,48 @@
             }
 
 
-        $(document).ready(function(){            
+        $(document).ready(function(){  
+            // Initially, hide all elements except the mic_recording
+            $('#image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
+            $('#mic_recording').show();
+
+            $('#startRecording').click(function() {
+                // When the user starts recording, hide all elements except the mic_recording
+                $('#image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
+                $('#mic_recording').show();
+            });
+
+            $('#stopRecording').click(function() {
+                // When the user stops recording, show only the loading-transcription
+                $('#mic_recording, #image-form, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
+                $('#loading-transcription').show();
+            });
+
+            // When the transcription result is ready, show only the loading-gpt-prompt
+            // You need to call this function when the transcription result is ready
+            function onTranscriptionResultReady() {
+                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-image, #generated-image').hide();
+                $('#loading-gpt-prompt').show();
+            }
+
+            // When the GPT prompt result is ready, show only the gptPromptResult and loading-image
+            // You need to call this function when the GPT prompt result is ready
+            function onGptPromptResultReady() {
+                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #generated-image').hide();
+                $('#gptPromptResult, #loading-image').show();
+            }
+
+            // When the image is generated, show only the generated image
+            // You need to call this function when the image is generated
+            function onImageGenerated() {
+                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image').hide();
+                $('#generated-image').show();
+            }
+
             $('#image-form').on('submit', function(e){
                 e.preventDefault();
                 const imagePrompt = $('#image-prompt').val();
+                getGptContextPrompt(imagePrompt)
                 generateImage(imagePrompt);
             });
         });
