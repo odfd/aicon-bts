@@ -5,7 +5,6 @@ from django.views.decorators.http import require_POST
 from .forms import AudioFileForm
 from django.http import HttpResponse
 from datetime import date
-from django.core.serializers import serialize
 
 from django.conf import settings
 from .models import GeneratedImage, DailyStats, RecentImage, AudioFile
@@ -97,11 +96,10 @@ def get_image(request):
     recent_images = GeneratedImage.objects.all().order_by('-id')[:3]
     # Extract URLs from the queryset
     image_urls = [image.url for image in recent_images]
-    # Convert the list of URLs to JSON
+    # Construct a JSON response
     response_data = {'image_urls': image_urls}
-    serialized_response = serialize('json', [response_data])
     # Return the JSON response
-    return HttpResponse(serialized_response, content_type='application/json')
+    return JsonResponse(response_data)
 
 
 @csrf_exempt
