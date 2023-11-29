@@ -91,7 +91,7 @@ def main_view(request):
 #     #return the url of the most recent generated image
 #     return HttpResponse(recent_image.url)
 
-def get_images(request):
+def get_image(request):
     # Get the most recent 3 generated images
     recent_images = GeneratedImage.objects.all().order_by('-id')[:3]
     # Serialize the queryset to JSON
