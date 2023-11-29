@@ -104,7 +104,13 @@
                         'image_prompt': imagePrompt,
                         'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
                     },
-                    success: function(data){
+                    success: function(data){                        
+                        if(data=="profanity_detected"){
+                            alert("Profanity detected. Please try again.");
+                            $('#mic_recording').show();
+                            startRecording();
+                            return;
+                        }
                         $('#generated-image').attr('src', data);
                         console.log(data);
                         console.log('Image generated successfully');

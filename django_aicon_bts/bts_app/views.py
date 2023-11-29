@@ -56,29 +56,36 @@ def get_gpt_context_prompt(request):
     return HttpResponse("Error: result_speech2text variable not found")
 
 def generate_image(request):
-    #if image_prompt is empty, return error
-    if request.method == 'POST':
+    try:
+        #if image_prompt is empty, return error
+        if request.method == 'POST':
 
-        image_prompt = request.POST.get('image_prompt')        
-        
-        if image_prompt == "":
-            return HttpResponse("Error: image_prompt cannot be empty")
+            image_prompt = request.POST.get('image_prompt')        
+            
+            if image_prompt == "":
+                return HttpResponse("Error: image_prompt cannot be empty")
 
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+            client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-        response = client.images.generate(
-            model="dall-e-3",
-            prompt= image_prompt,
-            size="1024x1024",
-            quality="standard",
-            n=1,
-            )
-        image_url = response.data[0].url        
+            response = client.images.generate(
+                model="dall-e-3",
+                prompt= image_prompt,
+                size="1024x1024",
+                quality="standard",
+                n=1,
+                )
+            image_url = response.data[0].url        
 
-        update_image(image_url)
+            update_image(image_url)
 
-        return HttpResponse(image_url)
-    return HttpResponse("Error: image_prompt variable not found")
+            return HttpResponse(image_url)
+        return HttpResponse("Error: image_prompt variable not found")
+    except Exception as e:
+        print('Error: ', str(e))
+        if 'our safety system' in str(e):
+            return HttpResponse("profanity_detected")
+        else:
+            return HttpResponse("Error: " + str(e))
 
 def main_view(request):
     return render(request, 'audio_analyze.html')
@@ -151,7 +158,7 @@ def process_audio(request):
         print('Error: ', str(e))
         return JsonResponse({'error': 'Internal server error', 'transcript': str(e)}, status=500)
     
-    
+
 # def process_audio(request):
 #     form = AudioFileForm(request.POST, request.FILES)
 #     if form.is_valid():    
