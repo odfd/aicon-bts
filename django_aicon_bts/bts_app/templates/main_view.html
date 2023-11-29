@@ -70,40 +70,7 @@
         $(document).ready(function(){  
             // Initially, hide all elements except the mic_recording
             $('#image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
-            $('#mic_recording').show();
-
-            $('#startRecording').click(function() {
-                // When the user starts recording, hide all elements except the mic_recording
-                $('#image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
-                $('#mic_recording').show();
-            });
-
-            $('#stopRecording').click(function() {
-                // When the user stops recording, show only the loading-transcription
-                $('#mic_recording, #image-form, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
-                $('#loading-transcription').show();
-            });
-
-            // When the transcription result is ready, show only the loading-gpt-prompt
-            // You need to call this function when the transcription result is ready
-            function onTranscriptionResultReady() {
-                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-image, #generated-image').hide();
-                $('#loading-gpt-prompt').show();
-            }
-
-            // When the GPT prompt result is ready, show only the gptPromptResult and loading-image
-            // You need to call this function when the GPT prompt result is ready
-            function onGptPromptResultReady() {
-                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #generated-image').hide();
-                $('#gptPromptResult, #loading-image').show();
-            }
-
-            // When the image is generated, show only the generated image
-            // You need to call this function when the image is generated
-            function onImageGenerated() {
-                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image').hide();
-                $('#mic_recording, #generated-image').show();
-            }
+            $('#mic_recording').show();            
 
             $('#image-form').on('submit', function(e){
                 e.preventDefault();
@@ -113,8 +80,40 @@
             });
         });
 
-        
+        $('#startRecording').click(function() {
+            // When the user starts recording, hide all elements except the mic_recording
+            $('#image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
+            $('#mic_recording').show();
+        });
 
+        $('#stopRecording').click(function() {
+            // When the user stops recording, show only the loading-transcription
+            $('#mic_recording, #image-form, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
+            $('#loading-transcription').show();
+        });
+
+        // When the transcription result is ready, show only the loading-gpt-prompt
+        // You need to call this function when the transcription result is ready
+        function onTranscriptionResultReady() {
+            $('#mic_recording, #image-form, #loading-transcription, #loading-image, #generated-image').hide();
+            $('#transcriptionResult, #loading-gpt-prompt').show();
+        }
+
+        // When the GPT prompt result is ready, show only the gptPromptResult and loading-image
+        // You need to call this function when the GPT prompt result is ready
+        function onGptPromptResultReady() {
+            $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #generated-image').hide();
+            $('#gptPromptResult, #loading-image').show();
+        }
+
+        // When the image is generated, show only the generated image
+        // You need to call this function when the image is generated
+        function onImageGenerated() {
+            $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image').hide();
+            $('#mic_recording, #generated-image').show();
+        }
+
+    
 
         document.addEventListener('DOMContentLoaded', () => {
             const startRecordingButton = document.getElementById('startRecording');
@@ -149,11 +148,11 @@
                         .then(data => {
                             console.log('Transcription:', data.transcript);
                             //update the transcription result in the transcriptionResult div
-                            $('transcriptionResult').text(data.transcript);
+                            $('#transcriptionResult').text(data.transcript);
 
                             onTranscriptionResultReady();
 
-                            getGptContextPrompt(imagePrompt);
+                            getGptContextPrompt(data.transcript);
 
                             // Use the transcription as the image prompt
                             //generateImage(data.transcript);
