@@ -95,9 +95,13 @@ def main_view(request):
 def get_image(request):
     # Get the most recent 3 generated images
     recent_images = GeneratedImage.objects.all().order_by('-id')[:3]
-    # Serialize the queryset to JSON
-    serialized_images = serializers.serialize('json', recent_images)
-    return HttpResponse(serialized_images, content_type='application/json')
+    # Extract URLs from the queryset
+    image_urls = [image.url for image in recent_images]
+    # Convert the list of URLs to JSON
+    response_data = {'image_urls': image_urls}
+    serialized_response = serialize('json', [response_data])
+    # Return the JSON response
+    return HttpResponse(serialized_response, content_type='application/json')
 
 
 @csrf_exempt
