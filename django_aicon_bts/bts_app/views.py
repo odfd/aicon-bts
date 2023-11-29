@@ -85,11 +85,18 @@ def main_view(request):
 
 
 #gets the image url of the most recent generated image
-def get_image(request):
-    #get most recent generated image
-    recent_image = GeneratedImage.objects.all().order_by('-id')[0]    
-    #return the url of the most recent generated image
-    return HttpResponse(recent_image.url)
+# def get_image(request):
+#     #get most recent generated image
+#     recent_image = GeneratedImage.objects.all().order_by('-id')[0]    
+#     #return the url of the most recent generated image
+#     return HttpResponse(recent_image.url)
+
+def get_images(request):
+    # Get the most recent 3 generated images
+    recent_images = GeneratedImage.objects.all().order_by('-id')[:3]
+    # Serialize the queryset to JSON
+    serialized_images = serializers.serialize('json', recent_images)
+    return HttpResponse(serialized_images, content_type='application/json')
 
 
 @csrf_exempt
