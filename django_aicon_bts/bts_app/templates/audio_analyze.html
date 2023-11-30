@@ -244,6 +244,7 @@
                     };
 
                     mediaRecorder.onstop = () => {
+                        console.log('Audiochunk length on stop', audioChunks.length)
                         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 
                         const formData = new FormData();
@@ -322,7 +323,9 @@
 
                         if (maxAmplitude > turnOnThreshold) {
                             if(isRecording == false){
+                                console.log('Length before threshold', audioChunks.length)
                                 audioChunks = []; //start recording now
+                                console.log('Length after amplitude over threshold', audioChunks.length)
                                 isRecording = true;
                                 $('#micIcon').show();
                                 firstRecordingTime = Date.now();
