@@ -15,10 +15,13 @@
         <button type="submit">Generate Image</button>
     </form>
     
-    <div id="mic_recording" class="centered">
-        <h1 class="display-1">Speak up!</h1>        
+    <div id="you_may_enter" class="centered" style="display: none; color:gray;">
+        <h1 class="display-2"><strong>you may enter</strong></h1>        
     </div>
-    <div class="centered" id="micIcon" style="display: none;">
+    <div id="mic_recording" class="centered" style="display: none; color:gray;">
+        <h1 class="display-2"><strong>you may speak</strong></h1>        
+    </div>
+    <div class="centered" id="micIcon" style="display: none; color:gray;">
         <br/>
         <br/>
         <br/>
@@ -30,27 +33,44 @@
         <br/>   
         <br/>
         <br/>     
-    <i class="fas fa-microphone fa-4x"></i>            
+        <br/>
+        <br/>
+        <br/>   
+        <br/>
+        <br/>   
+        <br/>
+        <br/>   
+        <br/>     
+        <br/>
+        <br/>
+        <br/>   
+        <br/>
+        <br/>   
+        <br/>
+        <br/> 
+    <i class="fas fa-microphone fa-5x"></i>            
 
     </div>
-    <div id="loading-transcription" class="bottom-centered" style="display: none;">
+    <!-- <div id="loading-transcription" class="bottom-centered" style="display: none;">
         <h3 class="display-4">Transcribing...</h3>
-    </div>
+    </div> -->
     <div id="transcriptionResult" class="centered" style="display: none;">
         <!-- transcriptionText -->
-        <p class="display-4" id="transcriptionText"></p>
+        <p class="display-2" id="transcriptionText"></p>
     </div>
-    <div id="loading-gpt-prompt" class="bottom-centered" style="display: none;">      
+    <!-- <div id="loading-gpt-prompt" class="bottom-centered" style="display: none;">      
         <h3 class="display-4">Generating GPT prompt...</h3>
-    </div>
-    <div id="gptPromptResult" class="centered" style="display: none;">
-        <!-- gptPromptText -->
+    </div> -->
+    <!-- <div id="gptPromptResult" class="centered" style="display: none;">        
         <p class="display-4" id="gptPromptText"></p>
-    </div>
+    </div> -->
     <div id="loading-image" class="bottom-centered" style="display: none;">
-        <h3 class="display-4">Generating image...</h3>        
+        <h3 class="display-6">generating image...</h3>        
     </div>
-    <img id="generated-image" src="" alt="Generated image will appear here" class="centered" style="display: none;">
+    <div id="profanity-detected" class="centered" style="display: none;">
+        <h3 class="display-4">Profanity detected. Please try again.</h3>
+    </div>
+    <img id="generated-image" src="" class="centered" style="display: none;">
 
     <style>
         body {
@@ -72,29 +92,45 @@
             transform: translateX(-50%);
             text-align: center;
         }
+
+        #generated-image {
+            border-radius: 50%;
+        }
+
+        #transcriptionText:after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
     </style>
 
 
 
     <script>        
         document.addEventListener('DOMContentLoaded', () => {
-            function getGptContextPrompt(speech2text) {
-                $.ajax({
-                    url: '/get_gpt_context_prompt/',
-                    type: 'post',
-                    data: {
-                        'result_speech2text': speech2text,
-                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
-                    },
-                    success: function(data){
-                        console.log(data);
-                        console.log('GPT response received successfully');      
-                        $('#gptPromptText').text(data);   
-                        onGptPromptResultReady();
-                        generateImage(data);
-                    }
-                });
-            }
+        //     function getGptContextPrompt(speech2text) {
+
+        //         $.ajax({
+        //             url: '/get_gpt_context_prompt/',
+        //             type: 'post',
+        //             data: {
+        //                 'result_speech2text': speech2text,
+        //                 'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+        //             },
+        //             success: function(data){
+        //                 console.log(data);
+        //                 console.log('GPT response received successfully');      
+        //                 $('#gptPromptText').text(data);   
+        //                 onGptPromptResultReady();
+        //                 generateImage(data);
+        //             }
+        //         });
+        //     }
 
             function generateImage(imagePrompt) {
                 $.ajax({
@@ -106,56 +142,75 @@
                     },
                     success: function(data){                        
                         if(data=="profanity_detected"){
-                            alert("Profanity detected. Please try again.");
-                            $('#mic_recording').show();
-                            startRecording();
+                            $('#image-form, #mic_recording, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
+                            $('#profanity-detected').show();
+                            setTimeout(() => {
+                                $('#profanity-detected').hide();
+                                $('#mic_recording').show();
+                                startRecording();
+                            }, 4000);
                             return;
                         }
-                        $('#generated-image').attr('src', data);
+                        // $('#generated-image').attr('src', data);
+                        // console.log(data);
+                        // console.log('Image generated successfully');
+                        // onImageGenerated();
+                        $('#generated-image').one('load', function() {
+                            console.log('Image loaded successfully');
+                            onImageGenerated();
+                        }).attr('src', data);
                         console.log(data);
-                        console.log('Image generated successfully');
-                        onImageGenerated();
+                        console.log('Image src set successfully');
                     }
                 });
             }
 
             $(document).ready(function(){  
                 // Initially, hide all elements except the mic_recording
-                $('#image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
+                $('#image-form, #profanity-detected, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image, #generated-image').hide();
                 $('#mic_recording').show();            
             });
 
             // When the transcription result is ready, show only the loading-gpt-prompt
             // You need to call this function when the transcription result is ready
             function onTranscriptionResultReady() {
-                $('#mic_recording, #image-form, #loading-transcription, #loading-image, #generated-image').hide();
-                $('#transcriptionResult, #loading-gpt-prompt').show();
+                if($('#loading-image').is(':visible')){
+                    return; //if the image is ready before the text is done with animation, don't show the gpt prompt
+                }
+                $('#mic_recording, #profanity-detected, #image-form, #loading-image, #generated-image').hide();
+                //$('#transcriptionResult, #loading-gpt-prompt').show();
+                $('#transcriptionResult, #loading-image').show();
             }
 
             // When the GPT prompt result is ready, show only the gptPromptResult and loading-image
             // You need to call this function when the GPT prompt result is ready
             function onGptPromptResultReady() {
-                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #generated-image').hide();
+                $('#mic_recording, #profanity-detected, #image-form, #transcriptionResult, #loading-gpt-prompt, #generated-image').hide();
                 $('#gptPromptResult, #loading-image').show();
             }
 
             // When the image is generated, show only the generated image
             // You need to call this function when the image is generated
             function onImageGenerated() {
-                $('#mic_recording, #image-form, #loading-transcription, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image').hide();
+                $('#mic_recording, #image-form, #profanity-detected, #transcriptionResult, #loading-gpt-prompt, #gptPromptResult, #loading-image').hide();
                 $('#generated-image').show();
 
-                // After 10 seconds, hide the generated image, show the mic_recording, and start the mic recording
                 setTimeout(function() {
-                    // $('#generated-image').hide();
-                    // $('#mic_recording').show();
-                    // startRecording();  // Assuming startRecording is the function to start the mic recording
-                    $('#generated-image').fadeOut('slow', function() {
-                        $('#mic_recording').show();
-                        startRecording();  // Assuming startRecording is the function to start the mic recording
-                        $('#generated-image').attr('src', '');
+                    $('#generated-image').animate({
+                        width: '0px',
+                        height: '0px'
+                    }, 2000, function() {
+                        $('#you_may_enter').show();
+                        setTimeout(function() {
+                            $('#mic_recording').show();
+                            $('#you_may_enter').hide();
+                            $('#generated-image').hide();
+                            startRecording();  // Assuming startRecording is the function to start the mic recording
+                            $('#generated-image').attr('src', '');
+                            $('#generated-image').css({ 'width': '', 'height': '' });  // Reset the image size
+                        }, 5000);  // = 5 seconds
                     });
-                }, 20000);  // = 20 seconds
+                }, 10000);  // = 10 seconds
             }
 
 
@@ -167,6 +222,11 @@
 
             let firstRecordingTime = null;
             let latestRecordingTime = null;
+
+
+            let silenceTimeoutTime = 2000;
+            let minimumRecordingDuration = 500;
+            let maximumRecordingDuration = 10000;
 
             async function startRecording() {
                 try {
@@ -193,11 +253,37 @@
                         .then(response => response.json())
                         .then(data => {
                             console.log('Transcription:', data.transcript);
-                            // Update your UI with the transcription result
-                            $('#transcriptionText').text(data.transcript);
+                            generateImage(data.transcript); //directly generate image to reduce delay
 
-                            onTranscriptionResultReady();
-                            getGptContextPrompt(data.transcript);
+                            const maxCharacters = 140;  // Change this to control the maximum number of characters
+                            let transcript = data.transcript;
+                            if (data.transcript.length > maxCharacters) {
+                                transcript = data.transcript.substring(0, maxCharacters) + '...';
+                            }
+                            // // Update your UI with the transcription result
+                            // $('#transcriptionText').text(data.transcript);
+
+                            // onTranscriptionResultReady();
+                            // //getGptContextPrompt(data.transcript);
+                            // generateImage(data.transcript);
+                            $('#mic_recording, #profanity-detected, #image-form, #loading-image, #generated-image').hide();
+                            $('#transcriptionResult').show();
+
+                            // Clear the transcriptionText element
+                            $('#transcriptionText').text('');
+
+                            // Show the transcription result one character at a time
+                            let i = 0;
+                            const speed = 80;  // Change this to control the speed
+                            const intervalId = setInterval(() => {
+                                if (i < transcript.length) {
+                                    $('#transcriptionText').text($('#transcriptionText').text() + transcript[i]);
+                                    i++;
+                                } else {
+                                    clearInterval(intervalId);
+                                    onTranscriptionResultReady();                                    
+                                }
+                            }, speed);
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -225,12 +311,14 @@
                         const maxAmplitude = Math.max.apply(null, buffer);
 
                         // Adjust this threshold based on your requirements
-                        const turnOnThreshold = 0.7;
+                        const turnOnThreshold = 0.85;
                         const silenceThreshold = 0.2;
 
+                        console.log("maxAmplitude: " + maxAmplitude);
 
                         if (maxAmplitude > turnOnThreshold) {
                             if(isRecording == false){
+                                audioChunks = []; //start recording now
                                 isRecording = true;
                                 $('#micIcon').show();
                                 firstRecordingTime = Date.now();
@@ -240,22 +328,37 @@
                             latestRecordingTime = Date.now();
                             // Reset the silence timeout if the volume is high
                             clearTimeout(silenceTimeout);
+                            silenceTimeout = undefined;
+                            console.log("cleared timeout");
                         } else {
                             // Start the silence timeout if the volume is low
                             if (isRecording) {
                                 const recordingDuration = latestRecordingTime - firstRecordingTime;
-                                if (recordingDuration > 500 && recordingDuration < 15000) {
-                                    silenceTimeout = setTimeout(() => {
-                                        if (isRecording) {//send the data after a pause
-                                            mediaRecorder.stop();
-                                            isRecording = false;
-                                            $('#micIcon').hide();
-                                        }
-                                    }, 1500);//silence delay after which audio is sent
-                                } else if (Date.now() - latestRecordingTime > 1500) { //if recording too short or too long, reset
+                                if (recordingDuration > minimumRecordingDuration && recordingDuration < maximumRecordingDuration) {
+                                    console.log(silenceTimeout);
+                                    if (typeof silenceTimeout == 'undefined') {
+                                        console.log("started timeout");
+                                        silenceTimeout = setTimeout(() => {                                        
+                                            if (isRecording) {//send the data after a pause
+                                                mediaRecorder.stop();
+                                                isRecording = false;
+                                                $('#micIcon').hide();
+                                                silenceTimeout = undefined;
+                                            }
+                                        }, silenceTimeoutTime);//silence delay after which audio is sent
+                                    }
+                                } else if (recordingDuration > maximumRecordingDuration){                                    
+                                    if (isRecording) {//send the data if someone speaks for too long
+                                        mediaRecorder.stop();
+                                        isRecording = false;
+                                        $('#micIcon').hide();
+                                        silenceTimeout = undefined;
+                                        console.log("stopped recording because of max duration");
+                                    }
+                                }
+                                else if (Date.now() - latestRecordingTime > silenceTimeoutTime) { //if recording too short or too long, reset
                                     isRecording = false;
-                                    mediaRecorder.stop();
-                                    $('#micIcon').hide();
+                                    $('#micIcon').hide();                                    
                                 }
                             }
                         }
