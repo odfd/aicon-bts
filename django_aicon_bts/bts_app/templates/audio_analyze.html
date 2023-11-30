@@ -238,9 +238,11 @@
                     mediaRecorder = new MediaRecorder(stream);
 
                     mediaRecorder.ondataavailable = event => {
+                        console.log("Adding audio chunk ondataavailable")
                         if (event.data.size > 0) {
                             audioChunks.push(event.data);
                         }
+                        console.log('Audiochunk length after adding ', audioChunks.length)
                     };
 
                     mediaRecorder.onstop = () => {
