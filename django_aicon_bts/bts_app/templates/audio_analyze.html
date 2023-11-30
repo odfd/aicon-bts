@@ -150,6 +150,7 @@
                                 $('#profanity-detected').hide();
                                 $('#mic_recording').show();
                                 startRecording();
+                                console.log("start recording from profanity detected");
                             }, 4000);
                             return;
                         }
@@ -208,6 +209,7 @@
                             $('#you_may_enter').hide();
                             $('#generated-image').hide();
                             startRecording();  // Assuming startRecording is the function to start the mic recording
+                            console.log("start recording from image fade out");
                             $('#generated-image').attr('src', '');
                             $('#generated-image').css({ 'width': '', 'height': '' });  // Reset the image size
                         }, 5000);  // = 5 seconds
