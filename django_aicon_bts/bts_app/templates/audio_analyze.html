@@ -105,6 +105,26 @@
 
 
     <script>        
+
+    // Get the current date and time
+    let date = new Date();
+    let day = date.getDay();
+    let hour = date.getHours();
+
+    // Check if the current day is a weekday and the current time is between 8:00 and 20:00
+    if (day >= 1 && day <= 5 && hour >= 8 && hour < 20) {
+        // The page is active, so you can enable your page's functionality here
+    } else {
+        // The page is inactive, so you can disable your page's functionality and display a message here
+        document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh;"><h1>Deze installatie is actief elke weekdag van 8:00 tot 20:00</h1></div>';
+
+        // Refresh the page every 10 minutes
+        setTimeout(function() {
+            location.reload();
+        }, 10 * 60 * 1000);
+    }
+
+
         document.addEventListener('DOMContentLoaded', () => {
 
             function generateImage(imagePrompt) {
