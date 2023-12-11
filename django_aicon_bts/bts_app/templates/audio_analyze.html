@@ -51,19 +51,10 @@
     <i class="fas fa-microphone fa-5x"></i>            
 
     </div>
-    <!-- <div id="loading-transcription" class="bottom-centered" style="display: none;">
-        <h3 class="display-4">Transcribing...</h3>
-    </div> -->
     <div id="transcriptionResult" class="centered" style="display: none;">
         <!-- transcriptionText -->
         <p class="display-2" id="transcriptionText"></p>
     </div>
-    <!-- <div id="loading-gpt-prompt" class="bottom-centered" style="display: none;">      
-        <h3 class="display-4">Generating GPT prompt...</h3>
-    </div> -->
-    <!-- <div id="gptPromptResult" class="centered" style="display: none;">        
-        <p class="display-4" id="gptPromptText"></p>
-    </div> -->
     <div id="loading-image" class="bottom-centered" style="display: none;">
         <h3 class="display-6">generating image...</h3>        
     </div>
@@ -115,24 +106,6 @@
 
     <script>        
         document.addEventListener('DOMContentLoaded', () => {
-        //     function getGptContextPrompt(speech2text) {
-
-        //         $.ajax({
-        //             url: '/get_gpt_context_prompt/',
-        //             type: 'post',
-        //             data: {
-        //                 'result_speech2text': speech2text,
-        //                 'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
-        //             },
-        //             success: function(data){
-        //                 console.log(data);
-        //                 console.log('GPT response received successfully');      
-        //                 $('#gptPromptText').text(data);   
-        //                 onGptPromptResultReady();
-        //                 generateImage(data);
-        //             }
-        //         });
-        //     }
 
             function generateImage(imagePrompt) {
                 $.ajax({
@@ -148,16 +121,13 @@
                             $('#profanity-detected').show();
                             setTimeout(() => {
                                 $('#profanity-detected').hide();
-                                $('#mic_recording').show();
-                                startRecording();
+                                $('#transcriptionResult, #mic_recording').show();
+                                //startRecording();
+                                location.reload();
                                 console.log("start recording from profanity detected");
                             }, 4000);
                             return;
                         }
-                        // $('#generated-image').attr('src', data);
-                        // console.log(data);
-                        // console.log('Image generated successfully');
-                        // onImageGenerated();
                         $('#generated-image').one('load', function() {
                             console.log('Image loaded successfully');
                             onImageGenerated();
@@ -208,8 +178,10 @@
                             $('#mic_recording').show();
                             $('#you_may_enter').hide();
                             $('#generated-image').hide();
-                            startRecording();  // Assuming startRecording is the function to start the mic recording
+                            //startRecording();  // Assuming startRecording is the function to start the mic recording
                             console.log("start recording from image fade out");
+                            //reload page
+                            location.reload();
                             $('#generated-image').attr('src', '');
                             $('#generated-image').css({ 'width': '', 'height': '' });  // Reset the image size
                         }, 5000);  // = 5 seconds
@@ -218,7 +190,6 @@
             }
 
 
-            let mediaRecorder;
             let audioChunks = [];
             let audioContext;
             let isRecording = false;
@@ -232,16 +203,26 @@
             let minimumRecordingDuration = 500;
             let maximumRecordingDuration = 10000;
 
+            let shouldStartRecording = false;
+
             async function startRecording() {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
+                    let mediaRecorder = new MediaRecorder(stream);
 
                     mediaRecorder.ondataavailable = event => {
                         console.log("Adding audio chunk ondataavailable")
-                        if (event.data.size > 0) {
-                            audioChunks.push(event.data);
+                                                
+                        if (event.data.size > 0 && shouldStartRecording) {
+                            if (shouldStartRecording) {
+                                audioChunks.push(event.data); 
+                            } else {
+                                //clear the event.data
+                                event.data = null;
+                            }
+                                            
                         }
+                        
                         console.log('Audiochunk length after adding ', audioChunks.length)
                     };
 
@@ -267,12 +248,7 @@
                             if (data.transcript.length > maxCharacters) {
                                 transcript = data.transcript.substring(0, maxCharacters) + '...';
                             }
-                            // // Update your UI with the transcription result
-                            // $('#transcriptionText').text(data.transcript);
 
-                            // onTranscriptionResultReady();
-                            // //getGptContextPrompt(data.transcript);
-                            // generateImage(data.transcript);
                             $('#mic_recording, #profanity-detected, #image-form, #loading-image, #generated-image').hide();
                             $('#transcriptionResult').show();
 
@@ -321,12 +297,13 @@
                         const turnOnThreshold = 0.7;
                         const silenceThreshold = 0.3;
 
-                        console.log("maxAmplitude: " + maxAmplitude);
+                        //console.log("maxAmplitude: " + maxAmplitude);
 
                         if (maxAmplitude > turnOnThreshold) {
+                            shouldStartRecording = true;
                             if(isRecording == false){
-                                console.log('Length before threshold', audioChunks.length)
-                                audioChunks = []; //start recording now
+                                console.log('Length before threshold', audioChunks.length)                                
+                                audioChunks = []; //start recording now                                
                                 console.log('Length after amplitude over threshold', audioChunks.length)
                                 isRecording = true;
                                 $('#micIcon').show();
